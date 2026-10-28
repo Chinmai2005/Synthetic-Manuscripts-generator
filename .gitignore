@@ -1,0 +1,5 @@
+﻿output/
+output_jpg/
+preview/
+.venv/
+__pycache__/

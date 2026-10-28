@@ -1,0 +1,141 @@
+# ---------------------------------------------------------------------------
+# Synthetic Manuscript Generator - configuration
+# Every value can be overridden from the CLI:  python generate.py --set seed=7 --set image.scale=0.6
+# ---------------------------------------------------------------------------
+seed: 1234
+
+output:
+  dir: output                 # dataset is written to <dir>/<script>/<split>/
+  image_format: png           # png | jpg | webp
+  jpeg_quality: 93
+  image_prefix: Image_        # Image_1.png + Image_1.md (as in the assignment sample)
+  markdown_style: plain       # plain = text lines only (matches the sample), structured = headings + ==highlight== markers
+  write_metadata: true        # metadata.jsonl per split (bounding boxes, material, seed ...)
+
+dataset:
+  scripts: [devanagari, modi, sharada]
+  images_per_script: 100
+  splits: {train: 85, validation: 10, test: 5}   # counts (or fractions that sum to 1)
+  max_attempts: 10            # re-sample a page if the overflow / boundary QA fails
+
+image:
+  scale: 1.0                  # global resolution multiplier (0.5 = fast preview)
+
+# ------------------------------- materials ---------------------------------
+materials:
+  paper:
+    sizes: [[1400, 1000], [1500, 1050], [1250, 960], [1050, 1400]]   # folio size in px (w, h)
+    aging: [0.25, 1.0]
+    palettes:
+      - {name: cream,      light: [236, 224, 196], dark: [190, 165, 120]}
+      - {name: tan,        light: [219, 192, 146], dark: [168, 130, 86]}
+      - {name: yellowed,   light: [226, 198, 120], dark: [170, 130, 62]}
+      - {name: hartal,     light: [232, 190, 84],  dark: [176, 120, 40]}
+      - {name: brown,      light: [186, 150, 104], dark: [120, 86, 52]}
+      - {name: grey_rag,   light: [212, 204, 186], dark: [150, 138, 118]}
+      - {name: rose_tint,  light: [224, 190, 160], dark: [170, 124, 96]}
+  palm_leaf:
+    sizes: [[2000, 560], [1850, 520], [2150, 600], [1700, 500]]
+    aging: [0.3, 1.0]
+    palettes:
+      - {name: golden,   light: [212, 176, 100], dark: [150, 104, 48]}
+      - {name: olive,    light: [186, 170, 96],  dark: [120, 96, 44]}
+      - {name: brown,    light: [170, 126, 72],  dark: [98, 64, 32]}
+      - {name: pale,     light: [220, 196, 138], dark: [160, 128, 78]}
+      - {name: dark_aged, light: [140, 100, 56], dark: [74, 48, 26]}
+
+backdrops: [black, charcoal, grey, brown_cloth, blue_grey, white]
+
+# -------------------------------- layout -----------------------------------
+layout:
+  paper:   {single: 0.30, commentary: 0.20, two_column: 0.15, margin_notes: 0.35}
+  palm_leaf: {palm: 1.0}
+  heading_prob: 0.30          # invocation line ("Shri Ganeshaya Namah") at the top
+  frame_prob: 0.60            # hand-ruled border lines around the text block
+  guide_line_prob: 0.40       # faint ruled lines under every text line
+  verse_number_prob: 0.80     # ||12|| style section markers after each verse
+  ornament_prob: 0.55         # circled-dot section ornament in the margin
+
+# ---------------------------- handwriting style ------------------------------
+text:
+  slant_deg: [-3.0, 7.0]
+  slant_sd: 1.2
+  wave_amp: [0.8, 3.0]        # baseline waviness (px at 50px font size)
+  jitter: [0.5, 1.4]          # per-word elastic wobble
+  weight: [-0.04, 0.10]       # pen thickness bias
+  pen_var: [0.08, 0.22]       # pen-pressure variation
+  scale_jitter: 0.04
+  gap_ratio: [0.14, 0.34]     # word gap (in em)
+  justify_prob: [0.30, 0.90]
+  line_spacing: [1.35, 1.75]
+  rubric_prob: 0.04           # share of words written in red ink
+  highlight_prob: 0.75        # page gets highlighted (washed) words
+  highlight_spans: [1, 3]
+  notes_prob: 0.75            # marginal annotations on margin_notes layouts
+  folio_number_prob: 0.5
+
+ink:
+  colors:
+    - {name: lampblack, rgb: [26, 22, 20]}
+    - {name: brown_black, rgb: [46, 30, 22]}
+    - {name: sepia, rgb: [82, 54, 32]}
+    - {name: faded_gall, rgb: [98, 72, 52]}
+    - {name: blue_black, rgb: [30, 34, 50]}
+  red: [[168, 36, 28], [150, 40, 30], [185, 60, 34]]     # cinnabar / vermilion rubrication
+  highlight: [[238, 196, 70], [240, 160, 60], [226, 110, 96], [160, 196, 100]]   # turmeric, orange, red, green washes
+
+# ------------------------------- artifacts ---------------------------------
+artifacts:
+  bleed_sigma: 1.6            # ink bleeding blur radius (px @ 50px font)
+  bleed_strength: [0.25, 0.6]
+  fade_strength: [0.2, 0.7]   # faded strokes / patches
+  dropout: [0.2, 0.8]         # dry-pen skips & flaking ink
+  smudges: [0, 4]             # count range
+  blots: [0, 6]
+  show_through: [0.0, 0.07]   # reverse-side ink bleeding through (paper only)
+  relief: 0.25                # engraved look for palm leaf
+
+# ------------------------------ deformation --------------------------------
+deform:
+  border: [0.05, 0.09]        # scene border around folio (fraction)
+  rotation_deg: [-1.6, 1.6]
+  perspective: 0.012
+  warp_px: [4, 10]            # smooth surface warp amplitude (paper)
+  palm_bend_px: [8, 20]
+  folds: [0, 2]               # paper only
+  curl_prob: 0.7
+  curl_px: [8, 26]
+
+scan:
+  noise: [1.5, 4.5]
+  blur: [0.3, 0.9]
+  jpeg_round_trip: 0.4        # probability of simulated JPEG compression artefacts
+  vignette: [0.0, 0.25]
+
+# --------------------------------- scripts ---------------------------------
+# To add a script: add a block with fonts + a corpus (and optional transliteration).
+scripts:
+  devanagari:
+    materials: {paper: 0.6, palm_leaf: 0.4}
+    fonts:
+      - {path: assets/fonts/Kalam-Regular.ttf,   size_scale: 0.92, weight: 0.0}
+      - {path: assets/fonts/Tillana-Regular.ttf, size_scale: 0.95, weight: 0.02}
+      - {path: assets/fonts/Halant-Regular.ttf,  size_scale: 0.95, weight: 0.03}
+      - {path: assets/fonts/Sahitya-Regular.ttf, size_scale: 0.95, weight: 0.02}
+      - {path: assets/fonts/Laila-Regular.ttf,   size_scale: 0.95, weight: 0.03}
+    corpus: [data/corpus/marathi.txt, data/corpus/hindi_awadhi.txt, data/corpus/sanskrit_shlokas.txt, data/corpus/sanskrit_gita.txt]
+    headings: ["श्री गणेशाय नमः", "श्री गुरुभ्यो नमः", "श्री रामाय नमः", "श्री सरस्वत्यै नमः"]
+  modi:
+    materials: {paper: 0.7, palm_leaf: 0.3}
+    fonts:
+      - {path: assets/fonts/NotoSansModi-Regular.ttf, size_scale: 1.4, weight: 0.03}
+    corpus: [data/corpus/marathi.txt, data/corpus/hindi_awadhi.txt, data/corpus/sanskrit_shlokas.txt, data/corpus/sanskrit_gita.txt]
+    transliterate: {from: DEVANAGARI, to: MODI}
+    headings: ["श्री गणेशाय नमः", "श्री गुरुभ्यो नमः", "श्री रामाय नमः"]
+  sharada:
+    materials: {paper: 0.5, palm_leaf: 0.5}
+    fonts:
+      - {path: assets/fonts/NotoSansSharada-Regular.ttf, size_scale: 0.92, weight: 0.0}
+    corpus: [data/corpus/sanskrit_shlokas.txt, data/corpus/sanskrit_gita.txt, data/corpus/marathi.txt]
+    transliterate: {from: DEVANAGARI, to: SHARADA}
+    headings: ["श्री गणेशाय नमः", "श्री गुरुभ्यो नमः", "श्री सरस्वत्यै नमः"]
